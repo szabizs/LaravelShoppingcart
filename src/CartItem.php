@@ -6,6 +6,8 @@ use Illuminate\Contracts\Support\Arrayable;
 use Gloudemans\Shoppingcart\Contracts\Buyable;
 use Illuminate\Contracts\Support\Jsonable;
 
+use Illuminate\Support\Arr;
+
 class CartItem implements Arrayable, Jsonable
 {
     /**
@@ -110,7 +112,7 @@ class CartItem implements Arrayable, Jsonable
     {
         return $this->numberFormat($this->price, $decimals, $decimalPoint, $thousandSeperator);
     }
-    
+
     /**
      * Returns the formatted price with TAX.
      *
@@ -137,7 +139,7 @@ class CartItem implements Arrayable, Jsonable
     {
         return $this->numberFormat($this->subtotal, $decimals, $decimalPoint, $thousandSeperator);
     }
-    
+
     /**
      * Returns the formatted total.
      * Total is price for whole CartItem with TAX
@@ -164,7 +166,7 @@ class CartItem implements Arrayable, Jsonable
     {
         return $this->numberFormat($this->tax, $decimals, $decimalPoint, $thousandSeperator);
     }
-    
+
     /**
      * Returns the formatted tax.
      *
@@ -213,12 +215,12 @@ class CartItem implements Arrayable, Jsonable
      */
     public function updateFromArray(array $attributes)
     {
-        $this->id       = array_get($attributes, 'id', $this->id);
-        $this->qty      = array_get($attributes, 'qty', $this->qty);
-        $this->name     = array_get($attributes, 'name', $this->name);
-        $this->price    = array_get($attributes, 'price', $this->price);
+        $this->id       = Arr::get($attributes, 'id', $this->id);
+        $this->qty      = Arr::get($attributes, 'qty', $this->qty);
+        $this->name     = Arr::get($attributes, 'name', $this->name);
+        $this->price    = Arr::get($attributes, 'price', $this->price);
         $this->priceTax = $this->price + $this->tax;
-        $this->options  = new CartItemOptions(array_get($attributes, 'options', $this->options));
+        $this->options  = new CartItemOptions(Arr::get($attributes, 'options', $this->options));
 
         $this->rowId = $this->generateRowId($this->id, $this->options->all());
     }
@@ -232,7 +234,7 @@ class CartItem implements Arrayable, Jsonable
     public function associate($model)
     {
         $this->associatedModel = is_string($model) ? $model : get_class($model);
-        
+
         return $this;
     }
 
@@ -245,7 +247,7 @@ class CartItem implements Arrayable, Jsonable
     public function setTaxRate($taxRate)
     {
         $this->taxRate = $taxRate;
-        
+
         return $this;
     }
 
@@ -321,7 +323,7 @@ class CartItem implements Arrayable, Jsonable
      */
     public static function fromArray(array $attributes)
     {
-        $options = array_get($attributes, 'options', []);
+        $options = Arr::get($attributes, 'options', []);
 
         return new self($attributes['id'], $attributes['name'], $attributes['price'], $options);
     }
@@ -369,7 +371,7 @@ class CartItem implements Arrayable, Jsonable
             'price'    => $this->price,
             'options'  => $this->options->toArray(),
             'tax'      => $this->tax,
-            'isSaved'      => $this->isSaved,
+            'isSaved'  => $this->isSaved,
             'subtotal' => $this->subtotal
         ];
     }
