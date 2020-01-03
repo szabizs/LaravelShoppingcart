@@ -12,6 +12,8 @@ use Gloudemans\Shoppingcart\Exceptions\UnknownModelException;
 use Gloudemans\Shoppingcart\Exceptions\InvalidRowIDException;
 use Gloudemans\Shoppingcart\Exceptions\CartAlreadyStoredException;
 
+use App\Voucher;
+
 class Cart
 {
     const DEFAULT_INSTANCE = 'default';
@@ -284,6 +286,23 @@ class Cart
             return $subTotal + ($cartItem->qty * $cartItem->price);
         }, 0);
 
+        if(session()->has('apply_voucher') && session()->get('apply_voucher')[0] != '') {
+            $voucher = Voucher::find(session()->get('apply_voucher')[0]);
+            $cartValue = $subTotal;
+            $basePrice = $cartValue / config('vat.value');
+
+            switch($voucher->voucher_type) {
+                case 'percent':
+                    $finalCartValue = $cartValue - ($cartValue* ($voucher->value / 100));
+                    break;
+                case 'value':
+                    $finalCartValue = $cartValue - $voucher->value;
+                    break;
+            }
+
+            return $this->numberFormat($finalCartValue, $decimals, $decimalPoint, $thousandSeperator);
+        }
+
         return $this->numberFormat($subTotal, $decimals, $decimalPoint, $thousandSeperator);
     }
 
@@ -356,9 +375,9 @@ class Cart
 
 
         $this->getConnection()
-             ->table($this->getTableName())
-             ->where('identifier', $identifier)
-             ->delete();
+            ->table($this->getTableName())
+            ->where('identifier', $identifier)
+            ->delete();
 
 
         $this->getConnection()->table($this->getTableName())->insert([
@@ -415,9 +434,9 @@ class Cart
      */
     protected function deleteStoredCart($identifier) {
         $this->getConnection()
-             ->table($this->getTableName())
-             ->where('identifier', $identifier)
-             ->delete();
+            ->table($this->getTableName())
+            ->where('identifier', $identifier)
+            ->delete();
     }
 
 
